@@ -10,6 +10,7 @@
 #include<sys/poll.h>
 // #include"Logger.h"
 #include"InetAddress.h"
+#include"log.h"
 using std::string;
 namespace yazi
 {

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎访问系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+            color: white;
+            padding: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 背景样式 */
+        .bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(130deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* 装饰性形状 */
+        .shape1 { 
+            position: absolute; 
+            top: 15%; 
+            right: 10%; 
+            width: 180px; 
+            height: 180px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 50%;
+            filter: blur(10px);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape2 { 
+            position: absolute; 
+            bottom: 10%; 
+            left: 5%; 
+            width: 220px; 
+            height: 220px; 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 20px; 
+            transform: rotate(15deg);
+            filter: blur(10px);
+            animation: float 8s ease-in-out infinite 2s;
+        }
+
+        .shape3 { 
+            position: absolute; 
+            top: 40%; 
+            left: 15%; 
+            width: 100px; 
+            height: 100px; 
+            background: rgba(255,255,255,0.08); 
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            filter: blur(10px);
+            animation: float 7s ease-in-out infinite 1s;
+        }
+
+        /* 页面标题 */
+        .page-title {
+            margin: 40px 0 20px;
+            text-align: center;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.2);
+            font-size: 2.2rem;
+        }
+
+        /* 提示文本 */
+        .tip-text {
+            text-align: center;
+            opacity: 0.9;
+            margin-bottom: 40px;
+            max-width: 600px;
+            padding: 0 20px;
+        }
+
+        /* 媒体容器 */
+        .media-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 60px;
+        }
+
+        /* 媒体卡片 */
+        .media-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .media-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+        }
+
+        /* 媒体标题 */
+        .media-title {
+            padding: 1.2rem;
+            font-size: 1.1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* 媒体容器（占位/加载/内容） */
+        .media-wrapper {
+            width: 100%;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 占位状态 */
+        .media-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* 加载状态 */
+        .media-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        /* 加载动画 */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        /* 图片内容 */
+        .media-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        /* 视频内容 */
+        .media-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.3);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        /* 占位图标 */
+        .placeholder-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+
+        /* 状态切换 */
+        .media-wrapper.loading .media-placeholder { opacity: 0; pointer-events: none; }
+        .media-wrapper.loading .media-loading { opacity: 1; pointer-events: auto; }
+        .media-wrapper.loaded .media-placeholder { opacity: 0; pointer-events: none; }
+        .media-wrapper.loaded .media-loading { opacity: 0; pointer-events: none; }
+        .media-wrapper.loaded .media-image,
+        .media-wrapper.loaded .media-video { 
+            opacity: 1; 
+            pointer-events: auto;
+        }
+
+        /* 回到顶部按钮 */
+        #scrollTopBtn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 10px 15px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        #scrollTopBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        /* 动画效果 */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .media-container {
+                gap: 20px;
+            }
+
+            .media-card {
+                max-width: 100%;
+            }
+
+            .media-wrapper {
+                height: 220px;
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .shape1, .shape2, .shape3 {
+                transform: scale(0.7);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="shape1"></div>
+    <div class="shape2"></div>
+    <div class="shape3"></div>
+
+    <!-- 页面标题 -->
+    <h1 class="page-title">欢迎访问系统</h1>
+
+    <!-- 提示文本 -->
+    <p class="tip-text">点击下方卡片加载主机中的媒体资源，体验更丰富的内容展示</p>
+
+    <!-- 媒体容器：图片 + 视频 -->
+    <div class="media-container">
+        <!-- 图片卡片：点击加载 -->
+        <div class="media-card">
+            <div class="media-title">主机图片展示</div>
+            <div class="media-wrapper" id="imageWrapper">
+                <!-- 占位状态 -->
+                <div class="media-placeholder">
+                    <div class="placeholder-icon">🖼️</div>
+                    <div>点击加载图片</div>
+                </div>
+                <!-- 加载状态 -->
+                <div class="media-loading">
+                    <div class="spinner"></div>
+                </div>
+                <!-- 图片内容 -->
+                <img 
+                    src="" 
+                    alt="主机图片" 
+                    class="media-image" 
+                    id="hostImage"
+                    onload="onMediaLoaded('imageWrapper')"
+                    onerror="onMediaError('imageWrapper', '图片加载失败')">
+            </div>
+        </div>
+
+        <!-- 视频卡片：点击加载 -->
+        <div class="media-card">
+            <div class="media-title">主机视频展示</div>
+            <div class="media-wrapper" id="videoWrapper">
+                <!-- 占位状态 -->
+                <div class="media-placeholder">
+                    <div class="placeholder-icon">🎬</div>
+                    <div>点击加载视频</div>
+                </div>
+                <!-- 加载状态 -->
+                <div class="media-loading">
+                    <div class="spinner"></div>
+                </div>
+                <!-- 视频内容 -->
+                <video 
+                    src="" 
+                    class="media-video" 
+                    id="hostVideo"
+                    controls 
+                    preload="metadata"
+                    onloadedmetadata="onMediaLoaded('videoWrapper')"
+                    onerror="onMediaError('videoWrapper', '视频加载失败')">
+                    您的浏览器不支持视频播放，请更新浏览器版本。
+                </video>
+            </div>
+        </div>
+    </div>
+
+    <!-- 回到顶部按钮 -->
+    <button id="scrollTopBtn" onclick="scrollToTop()">回到顶部</button>
+
+    <script>
+        // 媒体资源路径（需与主机文件路径对应）
+        const IMAGE_PATH = "resources/images/akerman.jpg";
+        const VIDEO_PATH = "./videos/firstvedio.mp4";
+
+        // 初始化点击事件
+        document.getElementById("imageWrapper").addEventListener("click", () => 
+            loadMedia("imageWrapper", IMAGE_PATH, "image"));
+        document.getElementById("videoWrapper").addEventListener("click", () => 
+            loadMedia("videoWrapper", VIDEO_PATH, "video"));
+
+        /**
+         * 加载媒体资源
+         */
+        function loadMedia(wrapperId, mediaPath, mediaType) {
+            const wrapper = document.getElementById(wrapperId);
+            if (wrapper.classList.contains("loading") || wrapper.classList.contains("loaded")) {
+                return;
+            }
+            wrapper.classList.add("loading");
+            
+            if (mediaType === "image") {
+                document.getElementById("hostImage").src = mediaPath;
+            } else if (mediaType === "video") {
+                document.getElementById("hostVideo").src = mediaPath;
+            }
+        }
+
+        /**
+         * 媒体加载成功回调
+         */
+        function onMediaLoaded(wrapperId) {
+            const wrapper = document.getElementById(wrapperId);
+            wrapper.classList.remove("loading");
+            wrapper.classList.add("loaded");
+        }
+
+        /**
+         * 媒体加载失败回调
+         */
+        function onMediaError(wrapperId, errorText) {
+            const wrapper = document.getElementById(wrapperId);
+            wrapper.classList.remove("loading");
+            const placeholder = wrapper.querySelector(".media-placeholder");
+            placeholder.innerHTML = `<div class="placeholder-icon">❌</div><div>${errorText}</div><div style="font-size:12px;margin-top:5px;">点击可重试</div>`;
+        }
+
+        // 回到顶部逻辑
+        window.addEventListener('scroll', () => {
+            const scrollBtn = document.getElementById('scrollTopBtn');
+            scrollBtn.style.display = window.scrollY > 300 ? 'block' : 'none';
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

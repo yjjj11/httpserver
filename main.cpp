@@ -26,26 +26,10 @@ int main(int argc, char *argv[])
     signal(SIGTERM, Stop);  // 信号15，系统kill或killall命令默认发送的信号。
     signal(SIGINT, Stop);   // 信号2，按Ctrl + C发送的信号。
 
-    try {
-        // 转换并检查端口
-        int port = std::stoi(argv[2]);
-        if (port < 1 || port > 65535) {
-            throw "端口必须在 1-65535 之间";
-        }
+    // 启动服务器
+    HttpServer server(argv[1], atoi(argv[2]),3,0);
+    server.Start();  // 假设启动失败会抛异常
 
-        // 启动服务器
-        HttpServer server(argv[1], port,3,0);
-        server.Start();  // 假设启动失败会抛异常
-
-    } catch (const char* msg) {
-        // 处理自定义错误信息
-        std::cerr << "启动失败: " << msg << std::endl;
-        return 1;
-    } catch (...) {
-        // 捕获所有其他异常
-        std::cerr << "启动失败: 发生未知错误" << std::endl;
-        return 1;
-    }
-
+    
     return 0;
 }

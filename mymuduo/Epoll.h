@@ -8,6 +8,7 @@
 #include <vector>
 #include <unistd.h>
 #include"Channel.h"
+#include"log.h"
 class Channel;
 // Epoll类。
 class Epoll

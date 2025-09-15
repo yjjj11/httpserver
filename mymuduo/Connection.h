@@ -9,6 +9,9 @@
 #include<sys/syscall.h>
 #include<atomic>
 #include"Timestamp.h"
+#include"http/httprequest.h"
+#include"http/httpresponse.h"
+#include<sys/uio.h> 
 class EventLoop;
 class Channel;
 class Connection;
@@ -24,18 +27,25 @@ private:
     Buffer inputbuffer_;
     Buffer outputbuffer_;   //接收和发送缓冲区
     std::atomic_bool  disconnect_;  //是否仍然连接
+    int iovCnt_;
+    struct iovec iov_[2];
+
     
     std::function<void(spConnection)> closecallback_;
     std::function<void(spConnection)> errorcallback_;
-    std::function<void(spConnection,vector<string>&)> onmessagecallback_;
+    std::function<void(spConnection)> onmessagecallback_;
     std::function<void(spConnection)> sendcompletecallback_;   //发送数据时的回调函数
     Timestamp lasttime_;
-
+    httprequest request_;
+    httprequest::code_status code_;
+    httpresponse response_;
 public:
     vector<string> messages;
     Connection(EventLoop*ep, std::unique_ptr<Socket>clientsock);
     ~Connection();
 
+    httprequest& getrequest(){return request_;}
+    Buffer& getinputbuffer(){return inputbuffer_;}
     string ip()const {return clientsock_->ip();}
 	uint16_t port()const{return clientsock_->port();}
 	int fd()const{return clientsock_->fd();}
@@ -43,9 +53,10 @@ public:
     void closecallback();           //这是客户端在主动断开连接的时候channel类回调的函数
     void errorcallback();           //这是客户端在连接错误的时候channel类回调的函数
     void writecallback();
+    ssize_t write(int* saveError);
     void setclosecallback(std::function<void(spConnection)> fn);           //这是客户端在主动断开连接的时候channel类回调的函数
     void seterrorcallback(std::function<void(spConnection)> fn);           //这是客户端在连接错误的时候channel类回调的函数
-    void setonmessagecallback(std::function<void(spConnection, vector<string>&)> fn); 
+    void setonmessagecallback(std::function<void(spConnection)> fn); 
     void setsendcompletecallback(std::function<void(spConnection)> fn); 
 
     // 发送数据，不管在任何线程中，都是调用此函数发送数据。
@@ -55,5 +66,11 @@ public:
     void send(string&& data) ;
     void sendToLoop(std::shared_ptr<string> message);
     bool timeout(time_t now,int time);
-    int getline(string& line);
+
+    int do_http_parse();
+    void init_400_response(const string& srcDir,  string& path, bool isKeepAlive);
+    void init_200_response(const string& srcDir,  string& path, bool isKeepAlive);
+    string get_path(){return request_.getpath();}
+    bool get_alive(){return request_.get_alive();}
+    void make_response();
 };

@@ -18,10 +18,10 @@ wakeupchannel_(new Channel(ep_.get(),wakeupfd_)),timerfd_(createtimerfd(timetvl)
 timerchannel_(new Channel(this->ep(),timerfd_))
 {
     wakeupchannel_->setreadcallback(std::bind(&EventLoop::handlewakeup, this));
-    wakeupchannel_->enablereading();
+    wakeupchannel_->enablereading();//异步唤醒io队列中的发送线程
 
     timerchannel_->setreadcallback(std::bind(&EventLoop::handletimer, this));
-    timerchannel_->enablereading();
+    timerchannel_->enablereading();//定时唤醒事件循环清理空闲连接
 }
 EventLoop::~EventLoop()
 {

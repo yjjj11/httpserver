@@ -15,7 +15,11 @@ SOURCES := main.cpp \
            $(MUDUO_DIR)/Buffer.cpp \
            httpserver.cpp \
            $(MUDUO_DIR)/ThreadPoll.cpp \
-           $(MUDUO_DIR)/Timestamp.cpp
+           $(MUDUO_DIR)/Timestamp.cpp \
+           DatabaseConnectionPool/MysqlConn.cpp \
+           DatabaseConnectionPool/ConnectionPool.cpp \
+           mymuduo/http/httprequest.cpp \
+           mymuduo/http/httpresponse.cpp \
 
 # 定义所有头文件（用于依赖检测）
 HEADERS := $(MUDUO_DIR)/InetAddress.h \
@@ -29,8 +33,13 @@ HEADERS := $(MUDUO_DIR)/InetAddress.h \
            $(MUDUO_DIR)/Connection.h \
            $(MUDUO_DIR)/Buffer.h \
            httpserver.h \
+           DatabaseConnectionPool/MysqlConn.h \
            $(MUDUO_DIR)/ThreadPoll.h \
-           $(MUDUO_DIR)/Timestamp.h
+           $(MUDUO_DIR)/Timestamp.h \
+           $(MUDUO_DIR)/log.h \
+           DatabaseConnectionPool/ConnectionPool.h \
+           mymuduo/http/httprequest.h \
+           mymuduo/http/httpresponse.h \
 
 # 定义目标可执行文件名
 TARGET := main
@@ -39,7 +48,7 @@ all: $(TARGET)
 
 # 让可执行文件依赖于所有源文件和头文件
 $(TARGET): $(SOURCES) $(HEADERS)
-	g++ -g -O0 -o $@ $(SOURCES) -I$(MUDUO_DIR) -lpthread 
+	g++ -g -O0 -o $@ $(SOURCES) -I$(MUDUO_DIR) -IDatabaseConnectionPool -lpthread -lmysqlclient -ljsoncpp -std=c++20
 
 clean:
 	rm -f $(TARGET)

@@ -31,7 +31,7 @@ void TcpServer::newconnection(std::unique_ptr<Socket> clientsock)
     spConnection conn = std::make_shared<Connection>(subloops_[clientsock->fd()%threadnum_].get(), std::move(clientsock));
     conn->setclosecallback(std::bind(&TcpServer::closeconnection,this,std::placeholders::_1));
     conn->seterrorcallback(std::bind(&TcpServer::errorconnection,this,std::placeholders::_1));
-    conn->setonmessagecallback(std::bind(&TcpServer::onmessage,this,std::placeholders::_1,std::placeholders::_2));
+    conn->setonmessagecallback(std::bind(&TcpServer::onmessage,this,std::placeholders::_1));
     conn->setsendcompletecallback(std::bind(&TcpServer::sendcomplete,this,std::placeholders::_1));
     
     {
@@ -76,12 +76,12 @@ void TcpServer::errorconnection(spConnection conn)
     }    
 }
 
-void TcpServer::onmessage(spConnection conn, vector<string>& message)
+void TcpServer::onmessage(spConnection conn)
 {
     // 触发消息处理回调
     if (onmessagecb_)
     {
-        onmessagecb_(conn, message);
+        onmessagecb_(conn);
     }
 }
 
@@ -121,7 +121,7 @@ void TcpServer::seterrorconnectioncb(std::function<void(spConnection)> fn) {
 }
 
 // 设置消息处理回调函数
-void TcpServer::setonmessagecb(std::function<void(spConnection, vector<string>&)> fn) {
+void TcpServer::setonmessagecb(std::function<void(spConnection)> fn) {
     onmessagecb_ = fn;
 }
 

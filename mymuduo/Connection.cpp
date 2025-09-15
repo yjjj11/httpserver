@@ -14,7 +14,7 @@ clientchannel_(new Channel(loop->ep(), clientsock_->fd()))
 
 Connection::~Connection()
 {
-
+    
 }
 
 void Connection::closecallback()  // TCP连接关闭（断开）的回调函数，供Channel回调。
@@ -48,10 +48,10 @@ void Connection::onmessage()
     { 
         bzero(&buffer, sizeof(buffer));
         ssize_t nread = read(fd(), buffer, sizeof(buffer));
-         printf("读取到数据: %.*s\n", (int)nread, buffer);  // 打印原始数据
+        printf("读取到数据:\n %.*s\n", (int)nread, buffer);  // 打印原始数据
         if (nread > 0)  // 成功读取到数据
         {
-            inputbuffer_.append(buffer,nread);
+            inputbuffer_.append(buffer,nread);//为了不破坏封装
         } 
         // 读取被信号中断，继续尝试读取
         else if (nread == -1 && errno == EINTR) 
@@ -60,25 +60,11 @@ void Connection::onmessage()
         } 
         // 非阻塞IO下数据已读完（无更多数据）
         else if (nread == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))) 
-        { 
-            string line;
-            int ret;
-            while ((ret = getline(line)) == 1) {
-                // 处理一行数据（请求行或头部）
-                messages.push_back(line);
-                printf("解析到行: %s\n", line.c_str());
-            }
-
-            if (ret == -1) {
-                // 读到空行，HTTP头部结束
+        {
                 lasttime_ = Timestamp::now();
-                inputbuffer_.consume();
-                //printf("检测到空行，头部解析完成\n");  // 确认是否走到这里
-                //将当前报文传输并计算
-                onmessagecallback_(shared_from_this(),messages);
-                messages.clear();
-            }
-            break;
+                cout<<"onread_\n";
+                onmessagecallback_(shared_from_this());
+                break;
             
         } 
         // 客户端主动断开连接（读返回0）
@@ -90,7 +76,7 @@ void Connection::onmessage()
         }
     }
 }
-void Connection::setonmessagecallback(std::function<void(spConnection, vector<string>&)> fn)
+void Connection::setonmessagecallback(std::function<void(spConnection)> fn)
 {
     onmessagecallback_ = fn;
 }
@@ -139,36 +125,75 @@ void Connection::sendInloop(const std::shared_ptr<std::string>&data)
 }
 void Connection::writecallback()
 {
+    cout<<"开始发送数据了\n";
     if (outputbuffer_.size() == 0) {
         clientchannel_->disablewriting();
+        sendcompletecallback_(shared_from_this());  // 触发发送完成回调
+        request_.clean_last();
         return;
     }
-    //尝试将缓冲区中的内容全部发送出去
-    const char* buf = outputbuffer_.data();
-    size_t buf_len = outputbuffer_.size();
-    int writen = ::send(fd(), buf, buf_len, 0);
-    
-    if (writen > 0){
-        //cout<<"发送了：\n"<<outputbuffer_.data()<<"  \n长度为 :"<<writen<<"\n";
-        outputbuffer_.erase(0, writen);
-        //cout<<"发送结束："<<Timestamp::now().tostring()<<"\n";
-        if (outputbuffer_.size() == 0)
-        {
-            clientchannel_->disablewriting();
-            sendcompletecallback_(shared_from_this());  // 使用shared_from_this获取自身的shared_ptr
+    int saveError;
+    int ret=write(&saveError);
+     if (ret < 0) {
+        // 区分临时错误和致命错误
+        if (saveError != EAGAIN && saveError != EWOULDBLOCK) {
+            cout << "发送失败: " << strerror(saveError) << endl;
         }
-    }else if (writen == 0) {
-        // 发送0字节通常表示连接关闭
-        printf("连接已关闭，发送0字节\n");
-    } else {
-        // 区分临时错误（如EAGAIN）和致命错误
-        if (errno != EAGAIN && errno != EWOULDBLOCK) {
-            cout << "发送失败，错误errno: " << strerror(errno) << endl;
-            // 致命错误时应关闭连接
-        }
+        return;  // 临时错误等待下次写事件
     }
-}
 
+    // 发送成功后检查缓冲区是否为空
+    if (outputbuffer_.size() == 0) {
+        clientchannel_->disablewriting();  // 缓冲区空，关闭写事件
+        sendcompletecallback_(shared_from_this());  // 触发发送完成回调
+        request_.clean_last();
+    }
+    // //尝试将缓冲区中的内容全部发送出去
+    // const char* buf = outputbuffer_.data();
+    // size_t buf_len = outputbuffer_.size();
+    // int writen = ::send(fd(), buf, buf_len, 0);
+    
+    // if (writen > 0){
+    //     //cout<<"发送了：\n"<<outputbuffer_.data()<<"  \n长度为 :"<<writen<<"\n";
+    //     outputbuffer_.erase(0, writen);
+    //     //cout<<"发送结束："<<Timestamp::now().tostring()<<"\n";
+    //     if (outputbuffer_.size() == 0)
+    //     {
+    //         clientchannel_->disablewriting();
+    //         sendcompletecallback_(shared_from_this());  // 使用shared_from_this获取自身的shared_ptr
+    //     }
+    // }else if (writen == 0) {
+    //     // 发送0字节通常表示连接关闭
+    //     printf("连接已关闭，发送0字节\n");
+    // } else {
+    //     // 区分临时错误（如EAGAIN）和致命错误
+    //     if (errno != EAGAIN && errno != EWOULDBLOCK) {
+    //         cout << "发送失败，错误errno: " << strerror(errno) << endl;
+    //         // 致命错误时应关闭连接
+    //     }
+    // }
+    
+}
+ssize_t Connection::write(int* saveErrno)
+{
+    ssize_t len =writev(fd(), iov_, iovCnt_);
+        if(len <= 0) {
+            *saveErrno = errno;
+            return len;
+        }
+        if(static_cast<size_t>(len) > iov_[0].iov_len) {
+            iov_[1].iov_base = (uint8_t*) iov_[1].iov_base + (len - iov_[0].iov_len);
+            iov_[1].iov_len -= (len - iov_[0].iov_len);
+            outputbuffer_.consumeAll();
+            iov_[0].iov_len = 0;
+        }
+        else {
+            iov_[0].iov_base = (uint8_t*)iov_[0].iov_base + len; 
+            iov_[0].iov_len -= len; 
+            outputbuffer_.consumeLen(len);
+        }
+    return len;
+}
 void Connection::setsendcompletecallback(std::function<void(spConnection)> fn)
 {
     sendcompletecallback_ = fn;
@@ -180,20 +205,50 @@ bool Connection::timeout(time_t now,int time)
 }
 
 
-// 返回值：1=读到完整行，0=未读完，-1=空行
-int Connection::getline(string& line) {
-    string& buf = inputbuffer_.getbuf();
-    int& now = inputbuffer_.now();
-    size_t pos = buf.find("\r\n", now);  // 直接找\r\n作为行结束
+int  Connection::do_http_parse()
+{
+    cout<<"进入do_http_parse\n";
+    string& buffer=inputbuffer_.getbuf();
+    bool ret=request_.parse(buffer);
 
-    if (pos == string::npos) {
-        return 0;  // 没找到完整行，等更多数据
+    if(ret==false){
+        //说明在解析时，出现了问题，是一个bad_request;
+        code_=httprequest::bad_request;
+        return -1;
+    }else{
+        if(request_.getstatus()==httprequest::finish)//说明读取到了完整的请求
+        {
+        
+            return 1;
+        }
     }
+    return 0;
+}
 
-    // 提取行内容（不含\r\n）
-    line = buf.substr(now, pos - now);
-    now = pos + 2;  // 跳过\r\n
 
-    return line.empty() ? -1 : 1;  // 空行返回-1，否则返回1
+void Connection::init_400_response(const string& srcDir,  string& path, bool isKeepAlive)
+{
+    response_.init(srcDir,path,isKeepAlive,400);
+}
 
+void Connection::init_200_response(const string& srcDir,  string& path, bool isKeepAlive)
+{
+    response_.init(srcDir,path,isKeepAlive,200);
+}
+
+void Connection::make_response()
+{
+    response_.make_response(outputbuffer_);
+    iov_[0].iov_base=(char*)outputbuffer_.getbuf().c_str();
+    iov_[0].iov_len=outputbuffer_.size();
+    iovCnt_=1;
+
+    if(response_.fileLen()>0 && response_.file())
+    {
+        iov_[1].iov_base=response_.file();
+        iov_[1].iov_len=response_.fileLen();
+        iovCnt_=2;
+    }
+    debug("文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:{}",iovCnt_);
+    clientchannel_->enablewriting();
 }

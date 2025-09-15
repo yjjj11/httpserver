@@ -111,6 +111,16 @@
     "stop_token": "cpp",
     "streambuf": "cpp",
     "thread": "cpp",
-    "typeinfo": "cpp"
+    "typeinfo": "cpp",
+    "charconv": "cpp",
+    "chrono": "cpp",
+    "format": "cpp",
+    "iomanip": "cpp",
+    "span": "cpp",
+    "sstream": "cpp",
+    "variant": "cpp",
+    "unordered_set": "cpp",
+    "regex": "cpp",
+    "bitset": "cpp"
   }
 }

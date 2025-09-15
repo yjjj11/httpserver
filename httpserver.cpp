@@ -1,14 +1,24 @@
 #include"httpserver.h"
 
 HttpServer::HttpServer(const std::string &ip, const uint16_t port,int subthreadnum, \
-int workthreadnum) : tcpserver_(ip, port,subthreadnum),threadpool_(workthreadnum,"WORKS")
+int workthreadnum) : tcpserver_(ip, port,subthreadnum),threadpool_(workthreadnum,"WORKS"),\
+connpool_(ConnectionPool::getConnectionPool())
 {
     tcpserver_.setnewconnectioncb(std::bind(&HttpServer::HandleNewConnection, this, std::placeholders::_1));
     tcpserver_.setcloseconnectioncb(std::bind(&HttpServer::HandleClose, this, std::placeholders::_1));
     tcpserver_.seterrorconnectioncb(std::bind(&HttpServer::HandleError, this, std::placeholders::_1));
-    tcpserver_.setonmessagecb(std::bind(&HttpServer::HandleMessage, this, std::placeholders::_1, std::placeholders::_2));
+    tcpserver_.setonmessagecb(std::bind(&HttpServer::HandleMessage, this, std::placeholders::_1));
     tcpserver_.setsendcompletecb(std::bind(&HttpServer::HandleSendComplete, this, std::placeholders::_1));
-    
+    char path[64];
+    if(getcwd(path,sizeof(path))!=nullptr)
+    {
+        srcDir_=string(path)+"/resources";
+    }else 
+    {
+        debug("获取工作目录srcDir失败");
+        cout<<"获取工作目录srcDir失败\n";
+    }
+    cout<<"httpserver 中的srcDir: "<<srcDir_<<"\n";
 }
 
 HttpServer::~HttpServer()
@@ -29,50 +39,52 @@ void HttpServer::HandleNewConnection(spConnection conn)
 void HttpServer::HandleClose(spConnection conn)
 { 
     printf("%s Connection Close(fd=%d, ip=%s, port=%d)\n", 
-       Timestamp::now().tostring().c_str(),conn->fd(), conn->ip().c_str(), conn->port());
+    Timestamp::now().tostring().c_str(),conn->fd(), conn->ip().c_str(), conn->port());
 }
 
 void HttpServer::HandleError(spConnection conn)
 { 
     // 客户端的连接错误，在TcpServer类中回调此函数。
-    printf("close client(fd=%d, ip=%s, port=%d) \n", 
-             conn->fd(), conn->ip().c_str(), conn->port());
+    printf("%s Connection Close(fd=%d, ip=%s, port=%d)\n", 
+        Timestamp::now().tostring().c_str(),conn->fd(), conn->ip().c_str(), conn->port());
 }
 
-void HttpServer::HandleMessage(spConnection conn,  vector<string>& message)
+void HttpServer::HandleMessage(spConnection conn)
 { 
     if(threadpool_.size()==0)
     {
         //如果没有工作线程，在io中执行计算
-        OnMessage(conn,message);
+        OnMessage(conn);
     }
-    else threadpool_.addtask(bind(&HttpServer::OnMessage,this,conn,message));
+    else threadpool_.addtask(bind(&HttpServer::OnMessage,this,conn));//加入到工作线程中去处理读取，解析，响应，发送
 }
 
 void HttpServer::HandleSendComplete(spConnection conn)
 { 
-
+    string path=conn->get_path();
+    cout<<"发送 "<<path<<"成功\n";
+    cout<<"\n";
 }
 
-void HttpServer::OnMessage(spConnection conn, vector<string>& message) {
-    // 1. 先检查消息合法性并解析
-    string path;
-    int ret=get_http_head(path,conn,message);
-    //回应请求
-    if(ret)
+void HttpServer::OnMessage(spConnection conn) {
+    cout<<"进入到工作线程中开始执行\n";
+    int ret=conn->do_http_parse();
+    string path=conn->get_path();
+    if(ret==1)
     {
-        struct stat st;
-        if(stat(path.c_str(),&st)==-1)//文件不存在或是出错
-        {
-            //响应404
-            not_found(conn);
-        }
-        if(S_ISDIR(st.st_mode))path+="/index.html";//如果 是目录就跳转到那个首页
-        do_http_response(conn,path);
+        debug("初始化好的response");
+        cout<<"初始化好的response\n";
+        conn->init_200_response(srcDir_,path,conn->get_alive());
+    }else if(ret==-1)
+    {
+        //初始化不好的response
+        conn->init_400_response(srcDir_,path,false);
 
     }
-    
-    
+    else{
+        //继续触发读事件，等待下一轮的数据完全到达
+    }
+    conn->make_response();
 }
 
 void HttpServer::Stop()

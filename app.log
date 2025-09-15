@@ -1,0 +1,74 @@
+[2025-09-15 17:24:38] [DEBUG] parse over
+[2025-09-15 17:24:38] [DEBUG] 初始化好的response
+[2025-09-15 17:24:38] [DEBUG] 资源路径是/home/ppsome/learning/Socket/httpserver/resources/index.html
+[2025-09-15 17:24:38] [DEBUG] file path /home/ppsome/learning/Socket/httpserver/resources/index.html
+[2025-09-15 17:24:38] [DEBUG] 文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:2
+[2025-09-15 17:24:38] [DEBUG] parse over
+[2025-09-15 17:24:38] [DEBUG] 初始化好的response
+[2025-09-15 17:24:38] [DEBUG] 资源路径是/home/ppsome/learning/Socket/httpserver/resources/favicon.ico
+[2025-09-15 17:24:38] [DEBUG] 文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:1
+[2025-09-15 17:24:39] [DEBUG] parse over
+[2025-09-15 17:24:39] [DEBUG] 初始化好的response
+[2025-09-15 17:24:39] [DEBUG] 资源路径是/home/ppsome/learning/Socket/httpserver/resources/login.html
+[2025-09-15 17:24:39] [DEBUG] file path /home/ppsome/learning/Socket/httpserver/resources/login.html
+[2025-09-15 17:24:39] [DEBUG] 文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:2
+[2025-09-15 17:24:49] [DEBUG] parse over
+[2025-09-15 17:24:49] [DEBUG] 初始化好的response
+[2025-09-15 17:24:49] [DEBUG] 资源路径是/home/ppsome/learning/Socket/httpserver/resources/index.html
+[2025-09-15 17:24:49] [DEBUG] file path /home/ppsome/learning/Socket/httpserver/resources/index.html
+[2025-09-15 17:24:49] [DEBUG] 文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:2
+[2025-09-15 17:27:29] [DEBUG] parse over
+[2025-09-15 17:27:29] [DEBUG] 初始化好的response
+[2025-09-15 17:27:29] [DEBUG] 资源路径是/home/ppsome/learning/Socket/httpserver/resources/login.html
+[2025-09-15 17:27:29] [DEBUG] file path /home/ppsome/learning/Socket/httpserver/resources/login.html
+[2025-09-15 17:27:29] [DEBUG] 文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:2
+[2025-09-15 17:28:09] [DEBUG] parse over
+[2025-09-15 17:28:09] [DEBUG] 初始化好的response
+[2025-09-15 17:28:09] [DEBUG] 资源路径是/home/ppsome/learning/Socket/httpserver/resources/register.html
+[2025-09-15 17:28:09] [DEBUG] file path /home/ppsome/learning/Socket/httpserver/resources/register.html
+[2025-09-15 17:28:09] [DEBUG] 文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:2
+[2025-09-15 17:28:21] [DEBUG] parse over
+[2025-09-15 17:28:21] [DEBUG] 初始化好的response
+[2025-09-15 17:28:21] [DEBUG] 资源路径是/home/ppsome/learning/Socket/httpserver/resources/login.html
+[2025-09-15 17:28:21] [DEBUG] file path /home/ppsome/learning/Socket/httpserver/resources/login.html
+[2025-09-15 17:28:21] [DEBUG] 文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:2
+[2025-09-15 17:30:56] [DEBUG] parse over
+[2025-09-15 17:30:56] [DEBUG] 初始化好的response
+[2025-09-15 17:30:56] [DEBUG] 资源路径是/home/ppsome/learning/Socket/httpserver/resources/index.html
+[2025-09-15 17:30:56] [DEBUG] file path /home/ppsome/learning/Socket/httpserver/resources/index.html
+[2025-09-15 17:30:56] [DEBUG] 文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:2
+[2025-09-15 17:30:58] [DEBUG] parse over
+[2025-09-15 17:30:58] [DEBUG] 初始化好的response
+[2025-09-15 17:30:58] [DEBUG] 资源路径是/home/ppsome/learning/Socket/httpserver/resources/register.html
+[2025-09-15 17:30:58] [DEBUG] file path /home/ppsome/learning/Socket/httpserver/resources/register.html
+[2025-09-15 17:30:58] [DEBUG] 文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:2
+[2025-09-15 17:31:05] [DEBUG] parse_from_data succesfull
+[2025-09-15 17:31:05] [DEBUG] Tag:%d
+[2025-09-15 17:31:05] [DEBUG] Verify name:%s pwd:%s
+[2025-09-15 17:31:05] [ERROR] 注册成功，插入成功
+[2025-09-15 17:31:05] [DEBUG] UserVerify Sucessiful
+[2025-09-15 17:31:05] [DEBUG] parse over
+[2025-09-15 17:31:05] [DEBUG] 初始化好的response
+[2025-09-15 17:31:05] [DEBUG] 资源路径是/home/ppsome/learning/Socket/httpserver/resources/welcome.html
+[2025-09-15 17:31:05] [DEBUG] file path /home/ppsome/learning/Socket/httpserver/resources/welcome.html
+[2025-09-15 17:31:05] [DEBUG] 文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:2
+[2025-09-15 17:31:08] [DEBUG] parse over
+[2025-09-15 17:31:08] [DEBUG] 初始化好的response
+[2025-09-15 17:31:08] [DEBUG] 资源路径是/home/ppsome/learning/Socket/httpserver/resources/register.html
+[2025-09-15 17:31:08] [DEBUG] file path /home/ppsome/learning/Socket/httpserver/resources/register.html
+[2025-09-15 17:31:08] [DEBUG] 文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:2
+[2025-09-15 17:31:11] [DEBUG] parse over
+[2025-09-15 17:31:11] [DEBUG] 初始化好的response
+[2025-09-15 17:31:11] [DEBUG] 资源路径是/home/ppsome/learning/Socket/httpserver/resources/login.html
+[2025-09-15 17:31:11] [DEBUG] file path /home/ppsome/learning/Socket/httpserver/resources/login.html
+[2025-09-15 17:31:11] [DEBUG] 文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:2
+[2025-09-15 17:31:22] [DEBUG] parse_from_data succesfull
+[2025-09-15 17:31:22] [DEBUG] Tag:%d
+[2025-09-15 17:31:22] [DEBUG] Verify name:%s pwd:%s
+[2025-09-15 17:31:23] [ERROR] 登陆成功
+[2025-09-15 17:31:23] [DEBUG] UserVerify Sucessiful
+[2025-09-15 17:31:23] [DEBUG] parse over
+[2025-09-15 17:31:23] [DEBUG] 初始化好的response
+[2025-09-15 17:31:23] [DEBUG] 资源路径是/home/ppsome/learning/Socket/httpserver/resources/welcome.html
+[2025-09-15 17:31:23] [DEBUG] file path /home/ppsome/learning/Socket/httpserver/resources/welcome.html
+[2025-09-15 17:31:23] [DEBUG] 文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:2
