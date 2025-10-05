@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include<unistd.h>
 #include"ConnectionPool.h"
+#include"mymuduo/API/api.h"
 /*
  EchoServer类：回显服务器
 */
@@ -20,6 +21,7 @@ private:
     ThreadPool threadpool_;
     ConnectionPool* connpool_;
     string srcDir_;
+    API* globl_api_;
 public:
     HttpServer(const std::string &ip, const uint16_t port, \
         int subthreadnum=3,int workthreadnum=5);

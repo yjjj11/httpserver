@@ -175,7 +175,7 @@ private:
 };
 
 #define debug(fmt, ...)  Logger::getInstance().writeLog(LogLevel::DEBUG,   std::format(fmt, ##__VA_ARGS__))
-#define info(fmt, ...)   Logger::getInstance().writeLog(LogLevel::INFO,    std::format(fmt, ##__VA_ARGS__))
+#define Info(fmt, ...)   Logger::getInstance().writeLog(LogLevel::INFO,    std::format(fmt, ##__VA_ARGS__))
 #define warning(fmt, ...)Logger::getInstance().writeLog(LogLevel::WARNING, std::format(fmt, ##__VA_ARGS__))
 #define error(fmt, ...)  Logger::getInstance().writeLog(LogLevel::ERROR,   std::format(fmt, ##__VA_ARGS__))
 #define fatal(fmt, ...)  Logger::getInstance().writeLog(LogLevel::FATAL,   std::format(fmt, ##__VA_ARGS__))

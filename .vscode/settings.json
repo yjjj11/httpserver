@@ -121,6 +121,8 @@
     "variant": "cpp",
     "unordered_set": "cpp",
     "regex": "cpp",
-    "bitset": "cpp"
+    "bitset": "cpp",
+    "cinttypes": "cpp",
+    "any": "cpp"
   }
 }

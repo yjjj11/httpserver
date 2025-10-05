@@ -31,22 +31,30 @@ void httpresponse::UnmapFile()
 }
 
 
-void httpresponse::make_response(Buffer& buffer)
+void httpresponse::make_response(Buffer& buffer,bool body_need)
 {
-    if(stat((srcDir_+path_).data(),&mmFileStat_)||S_ISDIR(mmFileStat_.st_mode))
+    if(!body_need)
     {
+        cout<<"当前操作不用返回什么\n";
+    }
+    else if(stat((srcDir_+path_).data(),&mmFileStat_)||S_ISDIR(mmFileStat_.st_mode))
+    {
+        cout<<"找不到对应的文件\n";
         code_=404;//网页未找到
     }else if(!(mmFileStat_.st_mode & S_IROTH))
     {
+        debug("其他用户没有读权限");
         code_=403;
     }
     else if(code_==-1)code_=200;
+    
     debug("资源路径是{}",(srcDir_+path_).data());
     cout<<"资源路径是:  "<<(srcDir_+path_).data()<<"\n";
-
+    debug("当前的code是{}",code_);
     errorhtml();
     add_statusline(buffer);
-    add_content(buffer);
+    AddHeader_(buffer);
+    if(body_need)add_content(buffer);
 }
 
 void httpresponse::errorhtml()
@@ -54,12 +62,14 @@ void httpresponse::errorhtml()
     if(code_html.count(code_)==1)
     {
         path_=code_html.find(code_)->second;
+        debug("找到了errorhtml{}",path_);
         stat((srcDir_+path_).data(),&mmFileStat_);
     }
 }
 
 void httpresponse::add_statusline(Buffer& buffer)
 {
+    debug("进入了add_statusline");
     string status="";
     if(code_status.count(code_)==1)
     {
@@ -73,14 +83,25 @@ void httpresponse::add_statusline(Buffer& buffer)
 }
 
 void httpresponse::AddHeader_(Buffer& buff) {
+    debug("进入了add_header");
     buff.Append("Connection: ");
     if(isKeepAlive_) {
         buff.Append("keep-alive\r\n");
-        buff.Append("keep-alive: max=6, timeout=120\r\n");
+        buff.Append("keep-alive: max=20, timeout=120\r\n");
     } else{
         buff.Append("close\r\n");
     }
     buff.Append("Content-type: " + GetFileType() + "\r\n");
+    if(token_!="")
+    {
+        string cookie = 
+            token_ + "; "
+            "Max-Age=86400; "
+            "Path=/; "
+            "HttpOnly; "
+            "SameSite=Strict";
+        buff.Append("Set-Cookie:"+cookie+"\r\n");
+    }
 }
 
 
@@ -99,9 +120,11 @@ string httpresponse::GetFileType() {
 
 void httpresponse::add_content(Buffer& buff)
 {
+    debug("进入了add_content");
     int fd = open((srcDir_ + path_).data(), O_RDONLY);
     if(fd<0){
         ErrorContent(buff,"File NotFound");
+        debug("fd打开失败{}",(srcDir_ + path_).data());
         return;
     }
     debug("file path {}", (srcDir_ + path_).data());
@@ -111,6 +134,7 @@ void httpresponse::add_content(Buffer& buff)
         return; 
     }
     mmFile_ = (char*)mmRet;//管理映射
+    debug("映射成功");
     close(fd);
     buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
 }

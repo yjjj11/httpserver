@@ -6,6 +6,7 @@
 #include"../log.h"
 #include"../../DatabaseConnectionPool/ConnectionPool.h"
 using namespace std;
+class API;
 class httprequest
 {
 public:
@@ -26,7 +27,10 @@ public:
     parse_status getstatus(){return status_;}
     bool get_alive(){return isAlive_;}
     void clean_last(){init();}
+    bool get_body_need(){return body_need;}
+    string get_token(){return token_;}
 private:
+
     string trim(const std::string& s);
     void init();//函数内方法
     bool parse_line(string& line);
@@ -34,13 +38,14 @@ private:
     bool parse_body(string& buffer,int& read);
     void parse_path();
     void parse_POST();
+    void parse_API();
     bool parse_form_data();
     bool UserVerify(const string& username,const string& password,bool isLogin);
     int ConverHex(char c);
     void notready_to_ready();
     void ready_to_notready();
     string UrlDecode(const string& str);
-
+private:
     string path_,method_,vertion_,body_;
     parse_status status_;
     code_status code_;
@@ -53,7 +58,10 @@ private:
     {
         {"/login.html",1},{"/register.html",0}
     };
-    unordered_map<string, string> header_;//存储请求体的键值对
-    unordered_map<string, string> post_;//存储post表单中的键值对
+    static string token_;
+    static unordered_map<string, string> header_;//存储请求体的键值对
+    static unordered_map<string, string> post_;//存储post表单中的键值对
     bool isAlive_;
+    bool body_need={true};
+    friend class API;
 };

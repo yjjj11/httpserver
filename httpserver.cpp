@@ -2,7 +2,7 @@
 
 HttpServer::HttpServer(const std::string &ip, const uint16_t port,int subthreadnum, \
 int workthreadnum) : tcpserver_(ip, port,subthreadnum),threadpool_(workthreadnum,"WORKS"),\
-connpool_(ConnectionPool::getConnectionPool())
+connpool_(ConnectionPool::getConnectionPool()),globl_api_(API::getInstance())
 {
     tcpserver_.setnewconnectioncb(std::bind(&HttpServer::HandleNewConnection, this, std::placeholders::_1));
     tcpserver_.setcloseconnectioncb(std::bind(&HttpServer::HandleClose, this, std::placeholders::_1));
@@ -23,6 +23,7 @@ connpool_(ConnectionPool::getConnectionPool())
 
 HttpServer::~HttpServer()
 {
+
 }
 
 void HttpServer::Start()
@@ -78,6 +79,8 @@ void HttpServer::OnMessage(spConnection conn) {
     }else if(ret==-1)
     {
         //初始化不好的response
+        debug("初始化不好的response");
+        cout<<"初始化不好的response\n";
         conn->init_400_response(srcDir_,path,false);
 
     }

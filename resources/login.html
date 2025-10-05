@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录</title>
     <style>
+        /* 1. 复制 ranking.html 导航栏样式 */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             height: 100vh; 
@@ -14,9 +15,100 @@
             align-items: center; 
             color: white; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(130deg, #667eea 0%, #764ba2 100%);
             overflow: hidden;
+            position: relative; /* 新增：用于装饰形状定位 */
         }
+
+        /* 导航栏样式 - 与 ranking.html 完全一致 */
+        .navbar {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            position: fixed; /* 固定顶部 */
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+        .nav-logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .nav-link.active { /* 当前为登录页，无激活链接 */
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 2. 复制 ranking.html 背景+装饰形状样式（替换原渐变） */
+        .bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: url('images/akerman.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: brightness(0.7);
+        }
+        .shape1 { 
+            position: absolute; 
+            top: 15%; 
+            right: 10%; 
+            width: 180px; 
+            height: 180px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 50%;
+            filter: blur(10px);
+            animation: float 6s ease-in-out infinite;
+        }
+        .shape2 { 
+            position: absolute; 
+            bottom: 10%; 
+            left: 5%; 
+            width: 220px; 
+            height: 220px; 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 20px; 
+            transform: rotate(15deg);
+            filter: blur(10px);
+            animation: float 8s ease-in-out infinite 2s;
+        }
+        .shape3 { 
+            position: absolute; 
+            top: 40%; 
+            left: 15%; 
+            width: 100px; 
+            height: 100px; 
+            background: rgba(255,255,255,0.08); 
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            filter: blur(10px);
+            animation: float 7s ease-in-out infinite 1s;
+        }
+
+        /* 3. 页面原有内容样式（保留，调整顶部距离） */
         .container {
             position: relative;
             width: 100%;
@@ -24,43 +116,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-        }
-        .bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-        .shape {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            animation: float 8s ease-in-out infinite;
-        }
-        .shape1 { 
-            top: 20%; 
-            right: 15%; 
-            width: 120px; 
-            height: 120px; 
-            animation-delay: 0s;
-        }
-        .shape2 { 
-            bottom: 20%; 
-            left: 10%; 
-            width: 180px; 
-            height: 180px; 
-            border-radius: 20px; 
-            transform: rotate(15deg);
-            animation-delay: -2s;
-        }
-        .shape3 {
-            top: 40%;
-            left: 20%;
-            width: 80px;
-            height: 80px;
-            animation-delay: -4s;
+            padding-top: 80px; /* 给导航栏留空间 */
         }
         .card { 
             background: rgba(255, 255, 255, 0.1); 
@@ -181,6 +237,14 @@
             border-radius: 6px;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
+        .footer {
+            position: absolute;
+            bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        /* 4. 复制 ranking.html 动画关键帧 */
         @keyframes float {
             0%, 100% {
                 transform: translateY(0) rotate(0deg);
@@ -189,33 +253,38 @@
                 transform: translateY(-20px) rotate(5deg);
             }
         }
-        .logo {
-            position: absolute;
-            top: 2rem;
-            left: 2rem;
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: white;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            letter-spacing: 1px;
-        }
-        .footer {
-            position: absolute;
-            bottom: 1.5rem;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 12px 20px;
+            }
+            .nav-logo { font-size: 1rem; }
+            .nav-link { padding: 6px 12px; font-size: 0.9rem; }
+            
+            .card { width: 90%; padding: 2rem; }
+            .shape1, .shape2, .shape3 { transform: scale(0.7); }
         }
     </style>
 </head>
 <body>
+    <!-- 1. 添加 ranking 同款导航栏（删除原 AuthSystem logo） -->
+    <nav class="navbar">
+        <div class="nav-logo">图片浏览系统</div>
+        <div class="nav-links">
+            <a href="welcome.html" class="nav-link">首页</a>
+            <a href="ranking.html" class="nav-link">排行榜</a>
+        </div>
+    </nav>
+
+    <!-- 2. 添加 ranking 同款背景+装饰形状（替换原渐变背景） -->
+    <div class="bg"></div>
+    <div class="shape1"></div>
+    <div class="shape2"></div>
+    <div class="shape3"></div>
+
+    <!-- 3. 页面原有内容（保留） -->
     <div class="container">
-        <div class="bg"></div>
-        <div class="shape shape1"></div>
-        <div class="shape shape2"></div>
-        <div class="shape shape3"></div>
-        
-        <div class="logo">AuthSystem</div>
-        
         <form id="loginForm" method="POST" action="/login.html">
             <div class="card">
                 <h1>账号登录</h1>
@@ -236,19 +305,17 @@
                 </div>
             </div>
         </form>
-        
         <div class="footer">© 2023 认证系统 | 安全登录</div>
     </div>
 
+    <!-- 原有脚本（保留） -->
     <script>
         document.getElementById('loginForm').addEventListener('submit', function(e) {
-            // 简单的前端验证
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
             const successMessage = document.getElementById('successMessage');
             
-            // 隐藏所有消息
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
             
@@ -273,19 +340,10 @@
                 return;
             }
             
-            // 如果验证通过，显示成功消息（在实际应用中，表单会提交到服务器）
             successMessage.textContent = '正在验证，请稍候...';
             successMessage.style.display = 'block';
-            
-            // 在实际应用中，不需要阻止默认行为，表单会正常提交
-            // 这里只是演示效果
-            // e.preventDefault();
-            // setTimeout(() => {
-            //     this.submit();
-            // }, 1500);
         });
         
-        // 添加输入框的实时验证
         document.getElementById('username').addEventListener('input', function() {
             const errorMessage = document.getElementById('errorMessage');
             if (this.value.trim() && errorMessage.textContent.includes('用户名')) {

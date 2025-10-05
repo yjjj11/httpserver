@@ -123,15 +123,10 @@ void Connection::sendInloop(const std::shared_ptr<std::string>&data)
     outputbuffer_.append(data->data(),data->size());
     clientchannel_->enablewriting();  // 注册写事件。
 }
+
 void Connection::writecallback()
 {
     cout<<"开始发送数据了\n";
-    if (outputbuffer_.size() == 0) {
-        clientchannel_->disablewriting();
-        sendcompletecallback_(shared_from_this());  // 触发发送完成回调
-        request_.clean_last();
-        return;
-    }
     int saveError;
     int ret=write(&saveError);
      if (ret < 0) {
@@ -143,11 +138,29 @@ void Connection::writecallback()
     }
 
     // 发送成功后检查缓冲区是否为空
-    if (outputbuffer_.size() == 0) {
-        clientchannel_->disablewriting();  // 缓冲区空，关闭写事件
-        sendcompletecallback_(shared_from_this());  // 触发发送完成回调
-        request_.clean_last();
+    bool isComplete = false;
+    if (iovCnt_ == 1) {
+        isComplete = (outputbuffer_.size() == 0);
+    } else {
+        isComplete = (iov_[0].iov_len + iov_[1].iov_len == 0);
     }
+
+    if (isComplete) {
+        // 发送完成：关闭写事件，触发回调
+        sendcomplete();
+    } else {
+        // 未发送完成：继续等待写事件（下次内核缓冲区可用时再发）
+        clientchannel_->enablewriting();
+    }
+
+}
+void Connection::sendcomplete()
+{
+    clientchannel_->disablewriting();  // 缓冲区空，关闭写事件
+    sendcompletecallback_(shared_from_this());  // 触发发送完成回调
+    debug("发送完成\n");
+    request_.clean_last();
+}
     // //尝试将缓冲区中的内容全部发送出去
     // const char* buf = outputbuffer_.data();
     // size_t buf_len = outputbuffer_.size();
@@ -173,7 +186,7 @@ void Connection::writecallback()
     //     }
     // }
     
-}
+
 ssize_t Connection::write(int* saveErrno)
 {
     ssize_t len =writev(fd(), iov_, iovCnt_);
@@ -210,7 +223,8 @@ int  Connection::do_http_parse()
     cout<<"进入do_http_parse\n";
     string& buffer=inputbuffer_.getbuf();
     bool ret=request_.parse(buffer);
-
+    token_=request_.get_token();
+    response_.set_token(token_);
     if(ret==false){
         //说明在解析时，出现了问题，是一个bad_request;
         code_=httprequest::bad_request;
@@ -238,17 +252,21 @@ void Connection::init_200_response(const string& srcDir,  string& path, bool isK
 
 void Connection::make_response()
 {
-    response_.make_response(outputbuffer_);
+    bool body_need=request_.get_body_need();
+    response_.make_response(outputbuffer_,body_need);
+    debug("发出去的请求\n{}",outputbuffer_.getbuf().c_str());
     iov_[0].iov_base=(char*)outputbuffer_.getbuf().c_str();
     iov_[0].iov_len=outputbuffer_.size();
     iovCnt_=1;
 
-    if(response_.fileLen()>0 && response_.file())
-    {
-        iov_[1].iov_base=response_.file();
-        iov_[1].iov_len=response_.fileLen();
-        iovCnt_=2;
+    if(body_need){
+        if(response_.fileLen()>0 && response_.file())
+        {
+            iov_[1].iov_base=response_.file();
+            iov_[1].iov_len=response_.fileLen();
+            iovCnt_=2;
+        }
+        debug("文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:{}",iovCnt_);
     }
-    debug("文件已经映射完成,发送缓冲区中的行和头部也已经填充,准备发送,iovCnt:{}",iovCnt_);
     clientchannel_->enablewriting();
 }

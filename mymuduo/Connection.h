@@ -29,7 +29,7 @@ private:
     std::atomic_bool  disconnect_;  //是否仍然连接
     int iovCnt_;
     struct iovec iov_[2];
-
+    string token_;
     
     std::function<void(spConnection)> closecallback_;
     std::function<void(spConnection)> errorcallback_;
@@ -73,4 +73,5 @@ public:
     string get_path(){return request_.getpath();}
     bool get_alive(){return request_.get_alive();}
     void make_response();
+    void sendcomplete();
 };

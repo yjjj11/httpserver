@@ -33,6 +33,6 @@ public:
 	static ConnectionPool* getConnectionPool();
 	ConnectionPool(const ConnectionPool& others) = delete;
 	ConnectionPool& operator=(const ConnectionPool& others) = delete;
-
+	
 	shared_ptr<MysqlConn> getConnection();
 };

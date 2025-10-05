@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片排行榜 - 图片浏览系统</title>
+    <style>
+        /* 保持与首页相同的基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+            color: white;
+            padding: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 导航栏样式 - 与首页完全一致 */
+        .navbar {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 背景和装饰元素 - 与首页完全一致 */
+        .bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: url('images/akerman.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: brightness(0.7);
+        }
+
+        .shape1 { 
+            position: absolute; 
+            top: 15%; 
+            right: 10%; 
+            width: 180px; 
+            height: 180px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 50%;
+            filter: blur(10px);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape2 { 
+            position: absolute; 
+            bottom: 10%; 
+            left: 5%; 
+            width: 220px; 
+            height: 220px; 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 20px; 
+            transform: rotate(15deg);
+            filter: blur(10px);
+            animation: float 8s ease-in-out infinite 2s;
+        }
+
+        .shape3 { 
+            position: absolute; 
+            top: 40%; 
+            left: 15%; 
+            width: 100px; 
+            height: 100px; 
+            background: rgba(255,255,255,0.08); 
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            filter: blur(10px);
+            animation: float 7s ease-in-out infinite 1s;
+        }
+
+        /* 排行榜页面特有样式 */
+        .page-title {
+            margin: 40px 0 10px;
+            text-align: center;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.2);
+            font-size: 2rem;
+        }
+
+        .page-description {
+            text-align: center;
+            opacity: 0.9;
+            margin-bottom: 15px; /* 减少底部间距，给切换按钮留位置 */
+            max-width: 600px;
+            padding: 0 20px;
+        }
+
+        /* 新增：切换按钮容器样式 */
+        .tab-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 新增：切换按钮样式 */
+        .tab-btn {
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 新增：选中按钮样式（区分当前激活状态） */
+        .tab-btn.active {
+            background: rgba(255, 77, 77, 0.4);
+            box-shadow: 0 2px 8px rgba(255, 77, 77, 0.2);
+        }
+
+        /* 排行榜容器 */
+        .ranking-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1400px;
+            margin: 20px 0 60px;
+            padding: 0 20px;
+        }
+
+        /* 排行榜项 - 基于原有媒体卡片样式修改 */
+        .ranking-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ranking-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+        }
+
+        /* 排名标识 */
+        .rank-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 77, 77, 0.9);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* 前三名特殊样式 */
+        .ranking-item:nth-child(1) .rank-badge {
+            background: #FFD700;
+            color: #333;
+        }
+        
+        .ranking-item:nth-child(2) .rank-badge {
+            background: #C0C0C0;
+            color: #333;
+        }
+        
+        .ranking-item:nth-child(3) .rank-badge {
+            background: #CD7F32;
+        }
+
+        /* 排行榜项标题 */
+        .ranking-title {
+            padding: 1rem;
+            font-size: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 点赞数显示 */
+        .like-count-display {
+            background: rgba(255, 77, 77, 0.3);
+            padding: 3px 8px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.9rem;
+        }
+
+        /* 图片容器 */
+        .ranking-image-wrapper {
+            width: 100%;
+            height: 220px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ranking-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .ranking-item:hover .ranking-image {
+            transform: scale(1.05);
+        }
+
+        /* 加载状态 */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        /* 回到顶部按钮 - 与首页一致 */
+        #scrollTopBtn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 10px 15px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        #scrollTopBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        /* 动画效果 - 与首页一致 */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 12px 20px;
+            }
+            
+            .nav-logo {
+                font-size: 1rem;
+            }
+            
+            .nav-link {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+            }
+
+            .page-title {
+                font-size: 1.6rem;
+                margin-top: 30px;
+            }
+
+            /* 响应式：切换按钮缩小 */
+            .tab-btn {
+                padding: 6px 15px;
+                font-size: 0.9rem;
+            }
+
+            .ranking-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                margin-top: 10px;
+            }
+
+            .ranking-image-wrapper {
+                height: 200px;
+            }
+
+            .shape1, .shape2, .shape3 {
+                transform: scale(0.7);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 - 与首页相同，当前页面设为active -->
+    <nav class="navbar">
+        <div class="nav-logo">图片浏览系统</div>
+        <div class="nav-links">
+            <a href="welcome.html" class="nav-link">首页</a>
+            <a href="ranking.html" class="nav-link active">排行榜</a>
+        </div>
+    </nav>
+
+    <!-- 背景和装饰元素 - 与首页完全一致 -->
+    <div class="bg"></div>
+    <div class="shape1"></div>
+    <div class="shape2"></div>
+    <div class="shape3"></div>
+
+    <!-- 页面标题与描述 -->
+    <h1 class="page-title">图片点赞排行榜</h1>
+    <p class="page-description">实时展示热门图片，切换查看总榜或个人收藏</p>
+
+    <!-- 新增：总榜/我的收藏切换按钮 -->
+    <div class="tab-container">
+        <button class="tab-btn active" onclick="switchToTotalRank()">总榜</button>
+        <button class="tab-btn" onclick="switchToUserFavorite()">我的收藏</button>
+    </div>
+
+    <!-- 排行榜加载状态 -->
+    <div class="loading-container" id="loadingContainer">
+        <div class="spinner"></div>
+        <div class="loading-text">正在加载排行榜数据...</div>
+    </div>
+
+    <!-- 排行榜容器 -->
+    <div class="ranking-container" id="rankingContainer">
+        <!-- 排行榜内容将通过JavaScript动态生成 -->
+    </div>
+
+    <!-- 回到顶部按钮 -->
+    <button id="scrollTopBtn" onclick="scrollToTop()">回到顶部</button>
+
+    <script>
+        // 页面加载完成后默认加载总榜数据
+        window.addEventListener('load', function() {
+            fetchRankingData();
+        });
+
+        // 回到顶部功能 - 与首页相同
+        window.addEventListener('scroll', () => {
+            const scrollBtn = document.getElementById('scrollTopBtn');
+            scrollBtn.style.display = window.scrollY > 300 ? 'block' : 'none';
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /**
+         * 切换按钮状态（更新选中样式）
+         * @param {string} activeTab - 当前激活的标签（'total' 或 'user'）
+         */
+        function updateTabStatus(activeTab) {
+            const totalBtn = document.querySelector('.tab-btn:nth-child(1)');
+            const userBtn = document.querySelector('.tab-btn:nth-child(2)');
+            
+            if (activeTab === 'total') {
+                totalBtn.classList.add('active');
+                userBtn.classList.remove('active');
+            } else {
+                totalBtn.classList.remove('active');
+                userBtn.classList.add('active');
+            }
+        }
+
+        /**
+         * 切换到总榜（原有功能）
+         */
+        function switchToTotalRank() {
+            updateTabStatus('total');
+            fetchRankingData();
+        }
+
+        /**
+         * 切换到我的收藏
+         */
+        function switchToUserFavorite() {
+            updateTabStatus('user');
+            fetchUserFavoriteData();
+        }
+
+        /**
+         * 1. 获取总榜数据（原有功能，点赞数最高的前4图）
+         */
+        function fetchRankingData() {
+            showLoading();
+            fetch('/api/getImageRanking', {
+                method: 'GET',
+                cache: 'no-store'
+            })
+            .then(response => handleResponse(response, '总榜'))
+            .then(data => renderRanking(data, '总榜'))
+            .catch(error => handleError(error, '总榜'));
+        }
+
+        /**
+         * 2. 获取我的收藏数据（新增功能，当前用户点赞的前4图）
+         */
+        function fetchUserFavoriteData() {
+            showLoading();
+            fetch('/api/getUserFavoriteImages', {
+                method: 'GET',
+                cache: 'no-store',
+                headers: {
+                    // 注意：如果Token存储在localStorage，需手动添加Authorization头
+                    // 示例："Authorization": "Bearer " + localStorage.getItem("userToken")
+                    // 如果Token存储在Cookie（HttpOnly），无需添加此头（浏览器自动携带）
+                }
+            })
+            .then(response => {
+                // 单独处理未登录（401）
+                if (response.status === 401) {
+                    alert('请先登录，才能查看我的收藏～');
+                    window.location.href = '/login.html';
+                    throw new Error('未登录');
+                }
+                return handleResponse(response, '我的收藏');
+            })
+            .then(data => renderRanking(data, '我的收藏'))
+            .catch(error => {
+                // 排除未登录的错误（已单独处理跳转）
+                if (error.message !== '未登录') {
+                    handleError(error, '我的收藏');
+                }
+            });
+        }
+
+        /**
+         * 通用：显示加载状态
+         */
+        function showLoading() {
+            document.getElementById('loadingContainer').style.display = 'flex';
+            document.getElementById('rankingContainer').innerHTML = '';
+        }
+
+        /**
+         * 通用：处理响应（判断状态码 + 解析JSON）
+         */
+        function handleResponse(response, tabName) {
+            if (!response.ok) {
+                throw new Error(`加载${tabName}失败，HTTP状态码：${response.status}`);
+            }
+            return response.json();
+        }
+
+        /**
+         * 通用：处理错误（显示错误提示）
+         */
+        function handleError(error, tabName) {
+            console.error(`加载${tabName}失败：`, error);
+            document.getElementById('loadingContainer').style.display = 'none';
+            document.getElementById('rankingContainer').innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; opacity: 0.8;">
+                    ${tabName}数据加载失败，请刷新页面重试
+                </div>
+            `;
+        }
+
+        /**
+         * 通用：渲染排行榜（复用原有逻辑，适配两种数据）
+         */
+        function renderRanking(data, tabName) {
+            const container = document.getElementById('rankingContainer');
+            document.getElementById('loadingContainer').style.display = 'none';
+
+            if (data && Array.isArray(data) && data.length > 0) {
+                // 渲染前4条数据
+                const displayData = data.slice(0, 4);
+                displayData.forEach((item, index) => {
+                    const rankingItem = document.createElement('div');
+                    rankingItem.className = 'ranking-item';
+                    // 图片URL拼接（与后端返回的image_name格式匹配）
+                    const imageUrl = item.url || `/images/${item.image_name}`;
+                    
+                    rankingItem.innerHTML = `
+                        <div class="ranking-title">
+                            <span>图片 #${item.id}</span>
+                            <span class="like-count-display">
+                                <span>❤️</span>
+                                <span>${item.count || item.like_count}</span>
+                            </span>
+                        </div>
+                        <div class="ranking-image-wrapper">
+                            <div class="rank-badge">${index + 1}</div>
+                            <img 
+                                src="${imageUrl}" 
+                                alt="${tabName}图片 #${item.id}" 
+                                class="ranking-image"
+                                data-image-id="${item.id}"
+                                onload="this.style.opacity = 1"
+                                onerror="this.src = 'images/placeholder.jpg'; this.alt = '图片加载失败'">
+                        </div>
+                    `;
+                    container.appendChild(rankingItem);
+                });
+            } else {
+                // 无数据提示（区分总榜和我的收藏）
+                const emptyTip = tabName === '总榜' 
+                    ? '暂无总榜数据，快去点赞吧～' 
+                    : '你还没有收藏图片，快去点赞添加吧～';
+                
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; opacity: 0.8;">
+                        ${emptyTip}
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

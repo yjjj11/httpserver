@@ -47,17 +47,19 @@ public:
         { ".tar",   "application/x-tar" },
         { ".css",   "text/css "},
         { ".js",    "text/javascript "},
+        { ".json", "application/json" },
     };
 
 public:
     httpresponse();
     ~httpresponse() =default;
     void init(const string& srcDir, string& path, bool isKeepAlive, int code);
-    void make_response(Buffer& buffer);
+    void make_response(Buffer& buffer,bool body_need);
     size_t fileLen(){return mmFileStat_.st_size;}
     char* file(){return mmFile_;}
+    void set_token(const string& token){token_=token;}
 private:
-    string path_;
+    string path_,token_;
     int code_;
     bool isKeepAlive_;
     string srcDir_;

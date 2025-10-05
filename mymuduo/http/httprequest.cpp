@@ -1,12 +1,18 @@
 #include"httprequest.h"
 #include <regex>
+#include"../API/api.h"
+#include"token.h"
 
+unordered_map<string, string> httprequest::header_;//存储请求体的键值对
+unordered_map<string, string> httprequest::post_;//存储post表单中的键值对
+string httprequest::token_;
 void httprequest::init()
 {
-    method_=vertion_=body_=path_="";
+    method_=vertion_=body_=path_=token_="";
     header_.clear();
     post_.clear();
     status_=request_line;//从头开始解析
+    body_need=true;
 }
 bool httprequest::isAlive(){return isAlive_;}
 
@@ -149,6 +155,7 @@ bool httprequest::parse_header(string& line)
                 return false;
             }
         } else {
+            parse_API();
             status_ = finish;  // 没有Content-Length，解析完成
         }
         return true;
@@ -212,6 +219,7 @@ bool httprequest::parse_body(string& buffer,int& read)
 
 void httprequest::parse_POST()
 {
+    cout<<"进入到了parsepost函数\n";
     if(method_ == "POST" && header_["Content-Type"] == "application/x-www-form-urlencoded") {
         int ret=parse_form_data();//将表单中的数据存储到键值对中
         if(!ret)cout<<"parse_from_data error\n";
@@ -234,6 +242,7 @@ void httprequest::parse_POST()
             }
         }
     }   
+    parse_API();
 }
 
 bool httprequest::parse_form_data() {
@@ -312,7 +321,6 @@ int httprequest::ConverHex(char c) {
         }
         return result;
 }
-
 bool httprequest::UserVerify(const string& username, const string& password, bool isLogin)
 {
     if (username.empty() || password.empty())
@@ -342,7 +350,7 @@ bool httprequest::UserVerify(const string& username, const string& password, boo
     if (isLogin) // 登录检测逻辑
     {
         char sql[1024] = {0};
-        snprintf(sql, sizeof(sql), "select count(*) from users where username='%s' and password='%s'", 
+        snprintf(sql, sizeof(sql), "select id from users where username='%s' and password='%s'", 
                  username.c_str(), password.c_str());
         
         if (mysql->query(sql) && mysql->next())
@@ -355,6 +363,7 @@ bool httprequest::UserVerify(const string& username, const string& password, boo
                 flag = true;
                 error("登陆成功");
                 cout << "登陆成功\n";
+                token_=token::getInstance()->generate_token(countStr);
             }
             else
             {
@@ -401,6 +410,17 @@ bool httprequest::UserVerify(const string& username, const string& password, boo
                     flag = true;
                     error("注册成功，插入成功");
                     cout << "注册成功，插入成功\n";
+                    memset(insertSql,sizeof(insertSql),0);
+                    snprintf(insertSql, sizeof(insertSql), "select id from users where username='%s' and password='%s'", 
+                            username.c_str(), password.c_str());
+                    
+                    if (mysql->query(insertSql) && mysql->next())
+                    {
+                        // 获取count(*)结果并判断是否大于0
+                        string countStr = mysql->value(0);
+                        int count = atoi(countStr.c_str());
+                        if (count > 0)token_=token::getInstance()->generate_token(countStr);
+                    }
                 }
                 else
                 {
@@ -421,4 +441,32 @@ bool httprequest::UserVerify(const string& username, const string& password, boo
     debug("UserVerify Sucessiful");
     
     return flag;
+}
+
+void httprequest::parse_API()
+{
+    cout<<"进入到了parse_API\n";
+    if(API::getInstance()->funcs_.count(path_))//如果不是登陆或者注册业务
+        //就去其他衍生api业务中去找
+        {
+            debug("进入了API函数寻找");
+            string old_Path=path_;
+            string type=API::getInstance()->funcs_.find(path_)->second;
+            path_=any_cast<string>(API::getInstance()->call(path_));
+            
+            cout<<"httprequst得到的path是:"<<path_<<"\n";
+            debug("httprequst得到的path是{}",path_);
+            if(path_=="0")
+            {
+                cout<<"API"<<old_Path<<"处理失败\n";
+                path_ = "/error.html";
+                return;
+            }         
+            if(path_.find('.')==string::npos)
+            {
+                cout<<"不需要返回请求体\n";
+                debug("不需要返回请求体");
+                body_need=false;
+            }   
+        }
 }
