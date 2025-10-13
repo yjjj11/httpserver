@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎页面</title>
+    <style>
+        /* 1. 复制 ranking.html 导航栏样式 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            min-height: 100vh; 
+            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+            color: white; 
+            padding: 0;
+            position: relative;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center;
+            padding-top: 80px; /* 给导航栏留空间，避免遮挡内容 */
+        }
+
+        /* 导航栏样式 - 与 ranking.html 完全一致 */
+        .navbar {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            position: fixed; /* 固定在顶部，与 ranking 一致 */
+            top: 0;
+            left: 0;
+        }
+        .nav-logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .nav-link.active { /* 首页链接激活 */
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 2. 复制 ranking.html 背景+装饰形状样式 */
+        .bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: url('images/akerman.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: brightness(0.7);
+        }
+        .shape1 { 
+            position: absolute; 
+            top: 15%; 
+            right: 10%; 
+            width: 180px; 
+            height: 180px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 50%;
+            filter: blur(10px);
+            animation: float 6s ease-in-out infinite;
+        }
+        .shape2 { 
+            position: absolute; 
+            bottom: 10%; 
+            left: 5%; 
+            width: 220px; 
+            height: 220px; 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 20px; 
+            transform: rotate(15deg);
+            filter: blur(10px);
+            animation: float 8s ease-in-out infinite 2s;
+        }
+        .shape3 { 
+            position: absolute; 
+            top: 40%; 
+            left: 15%; 
+            width: 100px; 
+            height: 100px; 
+            background: rgba(255,255,255,0.08); 
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            filter: blur(10px);
+            animation: float 7s ease-in-out infinite 1s;
+        }
+
+        /* 3. 页面原有内容样式（保留，调整位置） */
+        h1 { 
+            margin-bottom: 3rem; 
+            font-size: 3.5rem; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+        }
+        .buttons { display: flex; gap: 1.5rem; }
+        a {
+            padding: 1.2rem 3rem; 
+            text-decoration: none;
+            border-radius: 6px; 
+            font-weight: bold;
+            font-size: 1.2rem; 
+            transition: 0.3s;
+        }
+        .login { background: white; color: #667eea; }
+        .register { background: transparent; color: white; border: 2px solid white; }
+        a:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+
+        /* 4. 复制 ranking.html 动画关键帧 */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 12px 20px;
+            }
+            .nav-logo { font-size: 1rem; }
+            .nav-link { padding: 6px 12px; font-size: 0.9rem; }
+            
+            h1 { font-size: 2.5rem; }
+            .buttons { flex-direction: column; }
+            a { padding: 1rem 2rem; font-size: 1rem; }
+            
+            .shape1, .shape2, .shape3 { transform: scale(0.7); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 1. 添加 ranking 同款导航栏 -->
+    <nav class="navbar">
+        <div class="nav-logo">图片浏览系统</div>
+        <div class="nav-links">
+            <a href="welcome.html" class="nav-link active">首页</a> <!-- 首页激活 -->
+            <a href="ranking.html" class="nav-link">排行榜</a>
+        </div>
+    </nav>
+
+    <!-- 2. 添加 ranking 同款背景+装饰形状 -->
+    <div class="bg"></div>
+    <div class="shape1"></div>
+    <div class="shape2"></div>
+    <div class="shape3"></div>
+
+    <!-- 3. 页面原有内容 -->
+    <h1>欢迎回来</h1>
+    <div class="buttons">
+        <a href="login.html" class="login">登录</a>
+        <a href="register.html" class="register">注册</a>
+    </div>
+</body>
+</html>
